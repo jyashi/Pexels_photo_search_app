@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 class MainViewModel(private val apiClient: ApiClient) : ViewModel() {
 
     private val _photos = MutableStateFlow<List<Photo>>(emptyList())
-    val photos: StateFlow<List<Photo>> = _photos // TODO use in lazy column
+    val photos: StateFlow<List<Photo>> = _photos
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading // TODO add loading indicator
@@ -30,4 +30,8 @@ class MainViewModel(private val apiClient: ApiClient) : ViewModel() {
             }
         }
     }
+    fun getPhotoById(photoId: Int): Photo? {
+        return _photos.value.find { it.id == photoId }
+    }
+
 }

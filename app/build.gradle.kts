@@ -77,10 +77,15 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     // Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
-
-    // Room DB
-    implementation("androidx.room:room-runtime:2.6.1")
+    // Unit Testing
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
+    testImplementation ("io.mockk:mockk:1.12.0")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
+
+    // Instrumented test
+    androidTestImplementation ("org.robolectric:robolectric:4.11.1")
+    androidTestImplementation ("androidx.navigation:navigation-testing:2.7.7")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.08.00"))

@@ -3,7 +3,7 @@ package com.example.pexels_photo_search_app.data.network
 import com.example.pexels_photo_search_app.BuildConfig.PEXELS_API_KEY
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
@@ -12,16 +12,20 @@ import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-class ApiClient {
-    private val client = HttpClient(CIO) {
+class ApiClient(engine: HttpClientEngine) {
+    @OptIn(ExperimentalSerializationApi::class)
+    private val client = HttpClient(engine) {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
+                explicitNulls = false // Workaround for "0" query causing illegal input error
             })
         }
         defaultRequest {
@@ -30,15 +34,35 @@ class ApiClient {
         }
     }
 
-    suspend fun searchPhotos(query: String, page: Int = 1, perPage: Int = 15): SearchResponse {
-        val httpResponse: HttpResponse = client.get("https://api.pexels.com/v1/search") {
-            parameter("query", query)
-            parameter("page", page)
-            parameter("per_page", perPage)
+    private suspend fun fetchData(
+        url: String,
+        queryParameters: Map<String, String> = emptyMap(),
+        headers: Map<String, String> = emptyMap()
+    ): HttpResponse {
+        return client.get(url) {
+            headers.forEach { (key, value) ->
+                header(key, value)
+            }
+            queryParameters.forEach { (key, value) ->
+                parameter(key, value)
+            }
         }
-        return httpResponse.body<SearchResponse>()
+    }
+
+    suspend fun searchPhotos(url: String,queryParameters: Map<String, String>, page: Int = 1, perPage: Int = 15): SearchResponse? {
+        val httpResponse = fetchData(
+            url = url,
+            queryParameters = queryParameters + mapOf("page" to page.toString(), "per_page" to perPage.toString()),
+            headers = mapOf("Authorization" to PEXELS_API_KEY)
+        )
+        return if (httpResponse.status == HttpStatusCode.OK) {
+            httpResponse.body()
+        } else {
+            null
+        }
     }
 }
+
 @Serializable
 data class SearchResponse(
     @SerialName("total_results") val totalResults: Int,
@@ -55,12 +79,7 @@ data class Photo(
     val height: Int,
     val url: String,
     val photographer: String,
-    @SerialName("photographer_url") val photographerUrl: String,
-    @SerialName("photographer_id") val photographerId: Int,
-    @SerialName("avg_color") val avgColor: String,
     val src: PhotoSrc,
-    val liked: Boolean,
-    val alt: String
 )
 
 @Serializable

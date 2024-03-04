@@ -10,10 +10,12 @@ import com.example.pexels_photo_search_app.data.network.ApiClient
 import com.example.pexels_photo_search_app.model.MainViewModel
 import com.example.pexels_photo_search_app.ui.screen.HomeScreen
 import com.example.pexels_photo_search_app.ui.screen.ImageDetailScreen
+import io.ktor.client.engine.cio.CIO
 
 @Composable
 fun NavGraph() {
-    val apiClient = ApiClient()
+
+    val apiClient = ApiClient(CIO.create())
     val viewModel = MainViewModel(apiClient)
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = NavRoutes.Home) {

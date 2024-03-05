@@ -56,24 +56,27 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
+// Holds the UI elements responsible for rendering the home page
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    val textState = viewModel.searchText.collectAsState()
-    var text by remember { mutableStateOf(TextFieldValue(textState.value)) }
+    val textState = viewModel.searchText.collectAsState() // Track user input state in view model
+    var text by remember { mutableStateOf(TextFieldValue(textState.value)) } // Capture user input
     val photos by viewModel.photos.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val context = LocalContext.current
     val listState = rememberLazyListState()
 
+    // Responsible for showing error message toasts
     LaunchedEffect(errorMessage) {
         errorMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             viewModel.clearErrorMessage()
         }
     }
+    // Responsible for triggering further photo loading when user scrolls to bottom of screen
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo }
             .map { it.lastOrNull()?.index }
@@ -99,11 +102,13 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
             shape = RoundedCornerShape(16.dp),
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
             keyboardActions = KeyboardActions(onSend = {
+                // When keyboard send pressed
                 viewModel.searchPhotos(text.text)
                 keyboardController?.hide()
             }),
             trailingIcon = {
                 IconButton(enabled = text.text.isNotEmpty(), onClick = {
+                    // When send Icon button pressed
                     viewModel.searchPhotos(text.text)
                     keyboardController?.hide()
                 }) {
@@ -123,7 +128,7 @@ fun HomeScreen(viewModel: MainViewModel, navController: NavController) {
     }
 }
 
-
+// Holds the UI elements for each photo item to be shown inside a lazy column
 @Composable
 fun PhotoItem(photo: Photo, navController: NavController) {
     Card(

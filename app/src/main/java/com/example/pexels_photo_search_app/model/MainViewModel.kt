@@ -15,16 +15,17 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(private val apiClient: ApiClient) : ViewModel() {
 
-    val searchText = MutableStateFlow("")
+    val searchText = MutableStateFlow("") // Track the user query
     private val _photos = MutableStateFlow<List<Photo>>(emptyList())
     val photos: StateFlow<List<Photo>> = _photos
-    private var nextPageUrl: String? = null
+    private var nextPageUrl: String? = null // Used to track which url to get the next photos from
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
-    private var currentPage = 1
+    private var currentPage = 1 // Track the current page for use in api query
 
+    // Exposed method to update photos list based on user query search
     fun searchPhotos(query: String) {
         viewModelScope.launch {
             try {
@@ -50,6 +51,7 @@ class MainViewModel(private val apiClient: ApiClient) : ViewModel() {
             }
         }
     }
+
     fun clearErrorMessage() {
         _errorMessage.value = null
     }
@@ -58,6 +60,7 @@ class MainViewModel(private val apiClient: ApiClient) : ViewModel() {
         return _photos.value.find { it.id == photoId }
     }
 
+    // Exposed method to load more photos when user scrolls to bottom (infinite scrolling)
     fun loadMorePhotos() {
         val url = nextPageUrl
         if (url != null) {
@@ -68,7 +71,7 @@ class MainViewModel(private val apiClient: ApiClient) : ViewModel() {
                         "page" to currentPage.toString(),
                         "per_page" to "15"
                     )
-                    val response = apiClient.searchPhotos(url,queryParameters)
+                    val response = apiClient.searchPhotos(url, queryParameters)
                     nextPageUrl = response?.nextPage
                     if (response != null) {
                         _photos.value = _photos.value + response.photos

@@ -20,11 +20,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 class ApiClient(engine: HttpClientEngine) {
+
     @OptIn(ExperimentalSerializationApi::class)
     private val client = HttpClient(engine) {
         install(ContentNegotiation) {
             json(Json {
-                ignoreUnknownKeys = true
+                ignoreUnknownKeys = true // Ignore keys not added to data class
                 explicitNulls = false // Workaround for "0" query causing illegal input error
             })
         }
@@ -34,6 +35,7 @@ class ApiClient(engine: HttpClientEngine) {
         }
     }
 
+    // Base api function to fetch data from api
     private suspend fun fetchData(
         url: String,
         queryParameters: Map<String, String> = emptyMap(),
@@ -49,10 +51,19 @@ class ApiClient(engine: HttpClientEngine) {
         }
     }
 
-    suspend fun searchPhotos(url: String,queryParameters: Map<String, String>, page: Int = 1, perPage: Int = 15): SearchResponse? {
+    // Returns the response body if response code is successful
+    suspend fun searchPhotos(
+        url: String,
+        queryParameters: Map<String, String>,
+        page: Int = 1,
+        perPage: Int = 15
+    ): SearchResponse? {
         val httpResponse = fetchData(
             url = url,
-            queryParameters = queryParameters + mapOf("page" to page.toString(), "per_page" to perPage.toString()),
+            queryParameters = queryParameters + mapOf(
+                "page" to page.toString(),
+                "per_page" to perPage.toString()
+            ),
             headers = mapOf("Authorization" to PEXELS_API_KEY)
         )
         return if (httpResponse.status == HttpStatusCode.OK) {

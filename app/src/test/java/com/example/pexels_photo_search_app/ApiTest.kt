@@ -15,7 +15,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class ApiClientTest {
-
+    // Simulated successful response
     private val jsonResponse = """
         {
             "total_results": 1,
@@ -64,7 +64,7 @@ class ApiClientTest {
         }
         val apiClient = ApiClient(mockEngine)
 
-        val response = apiClient.searchPhotos(SEARCH_URL,mapOf("query" to "nature"))
+        val response = apiClient.searchPhotos(SEARCH_URL, mapOf("query" to "nature"))
 
         assertEquals(1, response?.totalResults)
         assertEquals(1, response?.photos?.size)
@@ -87,7 +87,7 @@ class ApiClientTest {
 
         val apiClient = ApiClient(mockEngine)
 
-        val response = apiClient.searchPhotos(SEARCH_URL,mapOf("query" to "0145"))
+        val response = apiClient.searchPhotos(SEARCH_URL, mapOf("query" to "0145"))
         assertNull(response)
     }
 
@@ -109,7 +109,7 @@ class ApiClientTest {
         }
         val apiClient = ApiClient(mockEngine)
         val queryParameters = mapOf("query" to "0145")
-        val response = apiClient.searchPhotos(SEARCH_URL,queryParameters)
+        val response = apiClient.searchPhotos(SEARCH_URL, queryParameters)
         assertEquals(0, response?.photos?.size)
         assertEquals(true, response?.photos?.isEmpty())
     }

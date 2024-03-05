@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.pexels_photo_search_app.model.MainViewModel
 
+// Responsible for showing the detailed image after a user selects it from a list
 @Composable
 fun ImageDetailScreen(photoId: Int?, viewModel: MainViewModel) {
     val photo = viewModel.getPhotoById(photoId ?: -1)
